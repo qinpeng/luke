@@ -78,7 +78,6 @@ import org.apache.lucene.index.CheckIndex;
 import org.apache.lucene.index.CheckIndex.Status.SegmentInfoStatus;
 import org.apache.lucene.index.CompositeReader;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.DocValues;
 import org.apache.lucene.index.DocsAndPositionsEnum;
 import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.FieldInfo;
@@ -97,6 +96,7 @@ import org.apache.lucene.index.LogMergePolicy;
 import org.apache.lucene.index.MergePolicy;
 import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.MultiReader;
+import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.index.SegmentInfoPerCommit;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.index.SegmentReader;
@@ -166,7 +166,6 @@ import org.getopt.luke.decoders.StringDecoder;
 import org.getopt.luke.plugins.ScriptingPlugin;
 import org.getopt.luke.xmlQuery.CorePlusExtensionsParserFactory;
 import org.getopt.luke.xmlQuery.XmlQueryParserFactory;
-import org.wltea.analyzer.core.YhpAnalyzer;
 
 import thinlet.FrameLauncher;
 import thinlet.Thinlet;
@@ -898,7 +897,8 @@ public class Luke extends Thinlet implements ClipboardOwner {
     }
     try {
       IndexWriter iw = createIndexWriter();
-      iw.commit(userData);
+      iw.commit();
+//      iw.commit(userData);
       iw.close();
       refreshAfterWrite();
     } catch (Exception e) {
@@ -3014,8 +3014,11 @@ public class Luke extends Thinlet implements ClipboardOwner {
     if (f != null) {
       try {
         if (ar != null && info.hasNorms()) {
-          DocValues norms = ar.normValues(fName);
-          String val = Util.normsToString(norms, fName, docid, sim);
+          //@pqin
+          NumericDocValues norms = ar.getNormValues(fName);
+          String val = norms.toString();
+//          DocValues norms = ar.normValues(fName);
+//          String val = Util.normsToString(norms, fName, docid, sim);
           setString(cell, "text", val);
         } else {
           setString(cell, "text", "---");
@@ -3214,8 +3217,12 @@ public class Luke extends Thinlet implements ClipboardOwner {
     putProperty(dialog, "similarity", s);
     if (ar != null) {
      try {
-       DocValues norms = ar.normValues(f.name());
-       byte curBVal = (byte)norms.getSource().getInt(docNum.intValue());
+       //@pqin
+       NumericDocValues norms = ar.getNormValues(f.name());
+       byte curBVal = (byte)norms.get(docNum.intValue());
+       
+//       DocValues norms = ar.normValues(f.name());
+//       byte curBVal = (byte)norms.getSource().getInt(docNum.intValue());
        float curFVal = Util.decodeNormValue(curBVal, f.name(), s);
        setString(curNorm, "text", String.valueOf(curFVal));
        setString(newNorm, "text", String.valueOf(curFVal));
@@ -4091,8 +4098,6 @@ public class Luke extends Thinlet implements ClipboardOwner {
   public Query createQuery(String queryString) throws Exception {
     Object srchOpts = find("srchOptTabs");
     Analyzer analyzer = createAnalyzer(srchOpts);
-    if(analyzer !=null && analyzer instanceof YhpAnalyzer)
-      ((YhpAnalyzer)analyzer).setUseSmart(true);
       
     if (analyzer == null) {
       return null;

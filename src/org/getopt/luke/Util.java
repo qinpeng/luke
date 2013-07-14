@@ -5,25 +5,23 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.lucene.document.Field;
+import javax.xml.transform.Source;
+
 import org.apache.lucene.document.DateTools.Resolution;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.FieldType.NumericType;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.CompositeReader;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.DocValues;
-import org.apache.lucene.index.DocValues.Source;
 import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.SlowCompositeReaderWrapper;
 import org.apache.lucene.index.FieldInfo.IndexOptions;
 import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.SlowCompositeReaderWrapper;
 import org.apache.lucene.search.similarities.TFIDFSimilarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.BytesRef;
@@ -179,6 +177,7 @@ public class Util {
     return res;
   }
   
+  /*
   public static String normsToString(DocValues norms, String fName, int docid, TFIDFSimilarity sim) {
     if (norms == null) {
       return "-?-";
@@ -219,7 +218,7 @@ public class Util {
     }
     return "???unknown type";
   }
-  
+  */
   public static float decodeNormValue(byte v, String fieldName, TFIDFSimilarity sim) throws Exception {
     try {
       return sim.decodeNormValue(v);
@@ -288,7 +287,7 @@ public class Util {
     else flags.append("-");
     if (info.hasNorms()) {
       flags.append("N");
-      flags.append(dvToString(info.getNormType()));
+      flags.append(info.getNormType().toString());
     }
     else flags.append("----");
     if (numeric != null) {
@@ -329,13 +328,14 @@ public class Util {
     }
     if (info.hasDocValues()) {
       flags.append("D");
-      flags.append(dvToString(info.getDocValuesType()));
+      flags.append(info.getDocValuesType().toString());
     } else {
       flags.append("----");
     }    
     return flags.toString();
   }
   
+  /*
   private static String dvToString(DocValues.Type type) {
     String fl;
     if (type == null) {
@@ -386,6 +386,7 @@ public class Util {
     }
     return fl;
   }
+  */
   
   public static Resolution getResolution(String key) {
     if (key == null || key.trim().length() == 0) {

@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiFields;
@@ -196,7 +197,15 @@ public class HighFreqTerms {
     long totalTF = 0;
     try {
       Bits liveDocs = MultiFields.getLiveDocs(reader);
-      totalTF = MultiFields.totalTermFreq(reader, field, termtext);
+      // @pqin
+      DocsEnum de = MultiFields.getTermDocsEnum(reader, liveDocs, field, termtext);
+      if(de != null){
+        totalTF += de.freq();
+        while (de.nextDoc() != DocsEnum.NO_MORE_DOCS) {
+          totalTF += de.freq();  
+        }  
+      }
+//      totalTF = MultiFields.totalTermFreq(reader, field, termtext);
       return totalTF;
     } catch (Exception e) {
       return 0;
